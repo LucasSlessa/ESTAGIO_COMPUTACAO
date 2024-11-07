@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Média Móvel</title>
+    <title>Calculadora de Média Móvel e Ajuste Sazonal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -12,7 +12,7 @@
     
     <div class="container">
         <div class="card">
-            <h1>Calculadora de Média Móvel</h1>
+            <h1>UNIVAP</h1>
             
             <div class="method-selection">
                 <div class="radio-group">
@@ -30,6 +30,7 @@
                 <button onclick="adicionarLinha()">Adicionar Período</button>
                 <button onclick="calcularMediaMovel()">Calcular Média Móvel</button>
                 <button onclick="limparDados()">Limpar Dados</button>
+                <button onclick="calcularSazonalidade()">Calcular Ajuste Sazonal</button>
             </div>
 
             <div id="weightsContainer" class="weights-container">
@@ -44,6 +45,7 @@
                             <th>Período</th>
                             <th>Valor</th>
                             <th>Média Móvel</th>
+                            <th>Ajuste Sazonal</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -96,9 +98,10 @@
             const novaLinha = document.createElement('tr');
             const periodo = tbody.children.length + 1;
             
-            novaLinha.innerHTML = `
+            novaLinha.innerHTML = ` 
                 <td>${periodo}</td>
                 <td><input type="number" step="0.01" onchange="atualizarGrafico()"></td>
+                <td>-</td>
                 <td>-</td>
             `;
             
@@ -145,6 +148,33 @@
             atualizarGrafico();
         }
 
+        function calcularSazonalidade() {
+            const tbody = document.querySelector('#dadosTabela tbody');
+            const valores = Array.from(tbody.querySelectorAll('input')).map(input => parseFloat(input.value));
+            const numPeriodos = valores.length;
+
+            if (numPeriodos < 4) {
+                alert('É necessário pelo menos 4 períodos para calcular a sazonalidade.');
+                return;
+            }
+
+            // Calcular a demanda média anual
+            const demandaTotal = valores.reduce((acc, val) => acc + val, 0);
+            const demandaMediaAnual = demandaTotal / numPeriodos;
+
+            // Calcular coeficientes de sazonalidade
+            const coefSazonalidade = valores.map(val => val / demandaMediaAnual);
+            const coefSazonalidadeMedia = coefSazonalidade.reduce((acc, val) => acc + val, 0) / numPeriodos;
+
+            // Ajustar as previsões
+            for (let i = 0; i < valores.length; i++) {
+                const ajusteSazonal = coefSazonalidade[i] * coefSazonalidadeMedia;
+                tbody.children[i].children[3].textContent = ajusteSazonal.toFixed(2);
+            }
+
+            atualizarGrafico();
+        }
+
         function limparDados() {
             document.querySelector('#dadosTabela tbody').innerHTML = '';
             document.getElementById('periodos').value = '';
@@ -165,6 +195,10 @@
                 const mediaText = row.children[2].textContent;
                 return mediaText === '-' ? null : parseFloat(mediaText);
             });
+            const ajustes = Array.from(tbody.children).map(row => {
+                const ajusteText = row.children[3].textContent;
+                return ajusteText === '-' ? null : parseFloat(ajusteText);
+            });
 
             if (chart) {
                 chart.destroy();
@@ -174,56 +208,28 @@
                 type: 'line',
                 data: {
                     labels: periodos,
-                    datasets: [{
-                        label: 'Valores',
-                        data: valores,
-                        borderColor: '#007bff',
-                        tension: 0.1
-                    }, {
-                        label: 'Média Móvel',
-                        data: medias,
-                        borderColor: '#28a745',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: document.body.classList.contains('dark-mode') ? '#fff' : '#333'
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: document.body.classList.contains('dark-mode') ? 
-                                    'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                            },
-                            ticks: {
-                                color: document.body.classList.contains('dark-mode') ? '#fff' : '#333'
-                            }
+                    datasets: [
+                        {
+                            label: 'Valores',
+                            data: valores,
+                            borderColor: '#007bff',
+                            tension: 0.1
                         },
-                        x: {
-                            grid: {
-                                color: document.body.classList.contains('dark-mode') ? 
-                                    'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                            },
-                            ticks: {
-                                color: document.body.classList.contains('dark-mode') ? '#fff' : '#333'
-                            }
+                        {
+                            label: 'Média Móvel',
+                            data: medias,
+                            borderColor: '#28a745',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Ajuste Sazonal',
+                            data: ajustes,
+                            borderColor: '#ffc107',
+                            tension: 0.1
                         }
-                    }
+                    ]
                 }
             });
-        }
-
-        // Adicionar algumas linhas iniciais
-        for (let i = 0; i < 5; i++) {
-            adicionarLinha();
         }
     </script>
 </body>
