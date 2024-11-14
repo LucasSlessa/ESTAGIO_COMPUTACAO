@@ -117,34 +117,6 @@ function calcularSazonalidade() {
     atualizarGrafico();
 }
 
-function calcularPrevisaoDemanda() {
-    const tbody = document.querySelector('#dadosTabela tbody');
-    const valores = Array.from(tbody.querySelectorAll('input')).map(input => parseFloat(input.value));
-    const numPeriodos = valores.length;
-
-    if (numPeriodos < 1) {
-        alert('É necessário pelo menos 1 período para calcular a previsão de demanda.');
-        return;
-    }
-
-    const medias = Array.from(tbody.children).map(row => {
-        const mediaText = row.children[2].textContent;
-        return mediaText === '-' ? null : parseFloat(mediaText);
-    });
-
-    const ajustes = Array.from(tbody.children).map(row => {
-        const ajusteText = row.children[3].textContent;
-        return ajusteText === '-' ? null : parseFloat(ajusteText);
-    });
-
-    // Calcular a previsão de demanda (Média Móvel * Ajuste Sazonal)
-    const previsao = medias.map((media, i) => media && ajustes[i] ? media * ajustes[i] : null);
-
-    return previsao;
-}
-
-
-
 function limparDados() {
     document.querySelector('#dadosTabela tbody').innerHTML = '';
     document.getElementById('periodos').value = '';
@@ -154,6 +126,7 @@ function limparDados() {
         chart = null;
     }
 }
+
 function atualizarGrafico() {
     const ctx = document.getElementById('grafico').getContext('2d');
     const tbody = document.querySelector('#dadosTabela tbody');
@@ -168,9 +141,6 @@ function atualizarGrafico() {
         const ajusteText = row.children[3].textContent;
         return ajusteText === '-' ? null : parseFloat(ajusteText);
     });
-
-    // Calcular previsão de demanda
-    const previsaoDemanda = calcularPrevisaoDemanda();
 
     if (chart) {
         chart.destroy();
@@ -198,19 +168,11 @@ function atualizarGrafico() {
                     data: ajustes,
                     borderColor: '#ffc107',
                     tension: 0.1
-                },
-                {
-                    label: 'Previsão de Demanda',
-                    data: previsaoDemanda,
-                    borderColor: '#ff6347', // Cor do gráfico de previsão
-                    tension: 0.1,
-                    borderDash: [5, 5] // Linha tracejada para a previsão
                 }
             ]
         }
     });
 }
-
 
 
 async function exportarParaPDF() {
@@ -326,8 +288,6 @@ document.addEventListener('DOMContentLoaded', function() {
         calendarInput.value = currentDate;
     }
 });
-
-
 
 
 
