@@ -46,6 +46,7 @@ body {
 .calendar-container {
     position: absolute;
     right: 20px; /* Ajuste conforme necessário */
+    z-index: 0;
     top: 80px;
     width: 250px;
     padding: 10px;
@@ -85,6 +86,7 @@ h1 {
 
 button, input, select {
     padding: 10px 20px;
+    z-index: 1;
     border: none;
     border-radius: 10px;
     background: var(--card-bg);
