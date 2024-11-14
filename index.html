@@ -6,13 +6,18 @@
     <title>Calculadora de Média Móvel e Ajuste Sazonal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="styles.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+
 </head>
 <body>
     <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     
     <div class="container">
         <div class="card">
-            <h1>UNIVAP</h1>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Universidade_do_Vale_do_Para%C3%ADba_logo.png/1200px-Universidade_do_Vale_do_Para%C3%ADba_logo.png" alt="">
+           
             
             <div class="method-selection">
                 <div class="radio-group">
@@ -31,6 +36,7 @@
                 <button onclick="calcularMediaMovel()">Calcular Média Móvel</button>
                 <button onclick="limparDados()">Limpar Dados</button>
                 <button onclick="calcularSazonalidade()">Calcular Ajuste Sazonal</button>
+
             </div>
 
             <div id="weightsContainer" class="weights-container">
@@ -54,6 +60,13 @@
 
             <div class="chart-container">
                 <canvas id="grafico"></canvas>
+            </div>
+
+            <div class="controls">
+
+                <button onclick="exportarParaPDF()">Exportar para PDF</button>
+                <button onclick="exportarParaExcel()">Exportar para Excel</button>
+
             </div>
         </div>
     </div>
@@ -108,6 +121,8 @@
             tbody.appendChild(novaLinha);
             atualizarGrafico();
         }
+
+        
 
         function calcularMediaMovel() {
             const numPeriodos = parseInt(document.getElementById('periodos').value);
@@ -231,6 +246,79 @@
                 }
             });
         }
+
+
+
+        async function exportarParaPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            let y = 20;
+        
+            // Título do relatório
+            doc.setFontSize(14);
+            doc.text("Relatório de Média Móvel e Ajuste Sazonal", 10, y);
+            y += 10;
+        
+            // Cabeçalhos
+            const headers = Array.from(document.querySelectorAll("#dadosTabela thead th")).map(header => header.textContent);
+            headers.forEach((header, index) => {
+                doc.text(header, 10 + index * 40, y);
+            });
+            y += 10;
+        
+            // Dados das linhas
+            const rows = Array.from(document.querySelectorAll("#dadosTabela tbody tr"));
+            rows.forEach((row) => {
+                const cells = Array.from(row.cells).map((cell, index) => {
+                    // Se a célula é da coluna "Valor" (coluna 1), pegamos o valor do input
+                    return index === 1 ? cell.querySelector("input").value : cell.textContent;
+                });
+        
+                cells.forEach((cell, index) => {
+                    doc.text(cell || "-", 10 + index * 40, y);
+                });
+                y += 10;
+            });
+        
+            // Exportar gráfico para o PDF
+            const canvas = document.getElementById("grafico");
+            const imgData = canvas.toDataURL("image/png");
+            doc.addPage();
+            doc.addImage(imgData, "PNG", 10, 10, 180, 90);
+        
+            // Salvar o arquivo PDF
+            doc.save("Relatorio.pdf");
+        }
+        
+
+        function exportarParaExcel() {
+            const table = document.getElementById("dadosTabela");
+            const wb = XLSX.utils.book_new();
+            const ws_data = [];
+        
+            // Extrair cabeçalhos
+            const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent);
+            ws_data.push(headers);
+        
+            // Extrair dados das linhas
+            const rows = Array.from(table.querySelectorAll("tbody tr"));
+            rows.forEach(row => {
+                const rowData = Array.from(row.cells).map((cell, index) => {
+                    // Pega o valor do input se for a coluna "Valor"
+                    return index === 1 ? cell.querySelector("input").value : cell.textContent;
+                });
+                ws_data.push(rowData);
+            });
+        
+            // Criar a planilha e o arquivo Excel
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
+        
+            XLSX.writeFile(wb, "Relatorio.xlsx");
+        }
+        
+        
+        
     </script>
 </body>
 </html>

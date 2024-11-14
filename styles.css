@@ -1,6 +1,6 @@
 :root {
     --primary-color: #007bff;
-    --background: #f0f2f5;
+    --background: #175cc5;
     --card-bg: #ffffff;
     --text-color: #333;
     --shadow-color: rgba(0, 0, 0, 0.1);
@@ -134,6 +134,13 @@ th {
     flex-wrap: wrap;
     justify-content: center;
 }
+img {
+    display: block;
+    margin: auto;
+    width: 300px;
+    height: 100px;
+}
+
 
 .weights-container.visible {
     display: flex;
