@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const calendarInput = document.getElementById('calendar');
     if (calendarInput) {
-        const currentDate = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        const currentDate = new Date().toISOString().split('T')[0]; 
         calendarInput.value = currentDate;
     }
 });
