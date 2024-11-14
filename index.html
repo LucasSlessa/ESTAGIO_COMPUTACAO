@@ -259,47 +259,64 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             let y = 20;
-            
-            // Título do relatório
-            doc.setFontSize(14);
-            doc.text("Relatório de Média Móvel e Ajuste Sazonal", 19, y);
-            y += 10;
-            
-            // Adicionar data e hora no PDF
+        
+            // Adiciona o logo da Univap no cabeçalho
+            const logo = await fetch("https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Universidade_do_Vale_do_Para%C3%ADba_logo.png/1200px-Universidade_do_Vale_do_Para%C3%ADba_logo.png")
+                .then(response => response.blob())
+                .then(blob => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            resolve(event.target.result);
+                        };
+                        reader.readAsDataURL(blob);
+                    });
+                });
+        
+            doc.addImage(logo, 'PNG', 10, 10, 30, 20); // Posição e tamanho do logo
+            doc.setFontSize(16);
+            doc.text("Relatório de Média Móvel e Ajuste Sazonal", 50, 20);
             doc.setFontSize(12);
-            doc.text(`Data e Hora: ${diaHora}`, 19, y);
+            doc.text(`Data: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 50, 30);
+            y += 20;
+        
+            // Linha de separação
+            doc.line(10, y, 200, y);
             y += 10;
-            
-            // Cabeçalhos
+        
+            // Cabeçalhos da tabela
+            doc.setFontSize(12);
             const headers = Array.from(document.querySelectorAll("#dadosTabela thead th")).map(header => header.textContent);
             headers.forEach((header, index) => {
+                doc.setFont("helvetica", "bold");
                 doc.text(header, 10 + index * 40, y);
             });
             y += 10;
-            
-            // Dados das linhas
+        
+            // Dados das linhas da tabela
             const rows = Array.from(document.querySelectorAll("#dadosTabela tbody tr"));
             rows.forEach((row) => {
                 const cells = Array.from(row.cells).map((cell, index) => {
-                    // Se a célula é da coluna "Valor" (coluna 1), pegamos o valor do input
                     return index === 1 ? cell.querySelector("input").value : cell.textContent;
                 });
-            
+        
                 cells.forEach((cell, index) => {
+                    doc.setFont("helvetica", "normal");
                     doc.text(cell || "-", 10 + index * 40, y);
                 });
                 y += 10;
             });
-            
-            // Exportar gráfico para o PDF
+        
+            // Adiciona o gráfico ao PDF
             const canvas = document.getElementById("grafico");
             const imgData = canvas.toDataURL("image/png");
             doc.addPage();
-            doc.addImage(imgData, "PNG", 10, 10, 180, 90);
-            
+            doc.addImage(imgData, "PNG", 10, 20, 180, 90);
+        
             // Salvar o arquivo PDF
             doc.save("Relatorio.pdf");
         }
+        
         
 
         function exportarParaExcel() {
