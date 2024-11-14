@@ -15,6 +15,12 @@
     <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     
     <div class="container">
+
+        <div class="calendar-container">
+            <p>Calendário</p>
+            <input type="date" id="calendar" readonly>
+        </div>
+
         <div class="card">
             <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Universidade_do_Vale_do_Para%C3%ADba_logo.png/1200px-Universidade_do_Vale_do_Para%C3%ADba_logo.png" alt="">
            
@@ -248,24 +254,28 @@
         }
 
 
-
         async function exportarParaPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             let y = 20;
-        
+            
             // Título do relatório
             doc.setFontSize(14);
-            doc.text("Relatório de Média Móvel e Ajuste Sazonal", 10, y);
+            doc.text("Relatório de Média Móvel e Ajuste Sazonal", 19, y);
             y += 10;
-        
+            
+            // Adicionar data e hora no PDF
+            doc.setFontSize(12);
+            doc.text(`Data e Hora: ${diaHora}`, 19, y);
+            y += 10;
+            
             // Cabeçalhos
             const headers = Array.from(document.querySelectorAll("#dadosTabela thead th")).map(header => header.textContent);
             headers.forEach((header, index) => {
                 doc.text(header, 10 + index * 40, y);
             });
             y += 10;
-        
+            
             // Dados das linhas
             const rows = Array.from(document.querySelectorAll("#dadosTabela tbody tr"));
             rows.forEach((row) => {
@@ -273,19 +283,19 @@
                     // Se a célula é da coluna "Valor" (coluna 1), pegamos o valor do input
                     return index === 1 ? cell.querySelector("input").value : cell.textContent;
                 });
-        
+            
                 cells.forEach((cell, index) => {
                     doc.text(cell || "-", 10 + index * 40, y);
                 });
                 y += 10;
             });
-        
+            
             // Exportar gráfico para o PDF
             const canvas = document.getElementById("grafico");
             const imgData = canvas.toDataURL("image/png");
             doc.addPage();
             doc.addImage(imgData, "PNG", 10, 10, 180, 90);
-        
+            
             // Salvar o arquivo PDF
             doc.save("Relatorio.pdf");
         }
@@ -295,11 +305,15 @@
             const table = document.getElementById("dadosTabela");
             const wb = XLSX.utils.book_new();
             const ws_data = [];
-        
+            
+            // Adicionar data e hora no Excel
+            ws_data.push([`Data e Hora: ${diaHora}`]);  // Linha com data e hora
+            ws_data.push([]); // Linha em branco
+            
             // Extrair cabeçalhos
             const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent);
             ws_data.push(headers);
-        
+            
             // Extrair dados das linhas
             const rows = Array.from(table.querySelectorAll("tbody tr"));
             rows.forEach(row => {
@@ -309,15 +323,23 @@
                 });
                 ws_data.push(rowData);
             });
-        
+            
             // Criar a planilha e o arquivo Excel
             const ws = XLSX.utils.aoa_to_sheet(ws_data);
             XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
-        
+            
             XLSX.writeFile(wb, "Relatorio.xlsx");
         }
         
+
+        // Capturar data e hora atuais
+        const dataHoraAtual = new Date();
+        const diaHora = `${dataHoraAtual.toLocaleDateString()} ${dataHoraAtual.toLocaleTimeString()}`;
+
         
+        const calendarInput = document.getElementById('calendar');
+        const currentDate = new Date().toISOString().split('T')[0]; // Pega o formato YYYY-MM-DD
+        calendarInput.value = currentDate;
         
     </script>
 </body>

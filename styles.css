@@ -43,6 +43,19 @@ body {
                -8px -8px 16px rgba(255, 255, 255, 0.1);
 }
 
+.calendar-container {
+    position: absolute;
+    right: 20px; /* Ajuste conforme necessário */
+    top: 80px;
+    width: 250px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
 h1 {
     text-align: center;
     margin-bottom: 30px;
@@ -157,5 +170,12 @@ img {
     
     .card {
         padding: 20px;
+    }
+
+    .calendar-container {
+        position: relative;
+        right: 0;
+        top: 30px;
+        width: 100%;
     }
 }
