@@ -245,19 +245,25 @@ function exportarParaExcel() {
     const ws_data = [];
     
     // Adicionar data e hora no Excel
+    const dataHoraAtual = new Date();
+    const diaHora = `${dataHoraAtual.toLocaleDateString()} ${dataHoraAtual.toLocaleTimeString()}`;
     ws_data.push([`Data e Hora: ${diaHora}`]);  // Linha com data e hora
     ws_data.push([]); // Linha em branco
     
     // Extrair cabeçalhos
-    const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent);
+    const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
     ws_data.push(headers);
     
     // Extrair dados das linhas
     const rows = Array.from(table.querySelectorAll("tbody tr"));
     rows.forEach(row => {
         const rowData = Array.from(row.cells).map((cell, index) => {
-            // Pega o valor do input se for a coluna "Valor"
-            return index === 1 ? cell.querySelector("input").value : cell.textContent;
+            // Pega o valor do input se for a coluna "Valor" (índice 1)
+            if (index === 1 && cell.querySelector("input")) {
+                return cell.querySelector("input").value;
+            }
+            // Para outras colunas, pega o texto diretamente
+            return cell.textContent.trim();
         });
         ws_data.push(rowData);
     });
@@ -266,8 +272,10 @@ function exportarParaExcel() {
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
     
+    // Gerar e salvar o arquivo Excel
     XLSX.writeFile(wb, "Relatorio.xlsx");
 }
+
 
 
 document.addEventListener('DOMContentLoaded', function() {
