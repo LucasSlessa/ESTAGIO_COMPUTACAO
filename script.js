@@ -33,6 +33,15 @@ function updateWeights() {
     }
 }
 
+function atualizarPeriodos() {
+    const tbody = document.querySelector('#dadosTabela tbody');
+    const periodos = Array.from(tbody.children);
+    
+    periodos.forEach((linha, index) => {
+        linha.cells[0].textContent = ` ${index + 1}`;
+    });
+}
+
 function adicionarLinha() {
     const tbody = document.querySelector('#dadosTabela tbody');
     const novaLinha = document.createElement('tr');
@@ -43,12 +52,12 @@ function adicionarLinha() {
         <td><input type="number" step="0.01" onchange="atualizarGrafico()"></td>
         <td>-</td>
         <td>-</td>
+        <td> <button class="delete-btn" onclick="excluirLinha(this)">Excluir</button></td>
     `;
     
     tbody.appendChild(novaLinha);
     atualizarGrafico();
 }
-
 
 
 function calcularMediaMovel() {
@@ -125,6 +134,13 @@ function limparDados() {
         chart.destroy();
         chart = null;
     }
+}
+function excluirLinha(button) {
+    const linha = button.closest('tr');
+    const tbody = document.querySelector('#dadosTabela tbody');
+    tbody.removeChild(linha);
+    atualizarGrafico();
+    atualizarPeriodos();
 }
 
 function calcularTendenciaLinear(valores) {
