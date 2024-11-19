@@ -38,10 +38,9 @@ function atualizarPeriodos() {
     const periodos = Array.from(tbody.children);
     
     periodos.forEach((linha, index) => {
-        linha.cells[0].textContent = ` ${index + 1}`;
+        linha.cells[0].textContent = `${index + 1}`;
     });
 }
-
 function adicionarLinha() {
     const tbody = document.querySelector('#dadosTabela tbody');
     const novaLinha = document.createElement('tr');
@@ -52,9 +51,39 @@ function adicionarLinha() {
         <td><input type="number" step="0.01" onchange="atualizarGrafico()"></td>
         <td>-</td>
         <td>-</td>
-        <td> <button class="delete-btn" onclick="excluirLinha(this)">Excluir</button></td>
+        <td><button class="delete-btn" onclick="excluirLinha(this)">Excluir</button></td>
     `;
     
+    novaLinha.setAttribute('draggable', 'true');
+    novaLinha.addEventListener('dragstart', (event) => {
+        event.dataTransfer.setData('text', event.target.rowIndex);
+    });
+    
+    novaLinha.addEventListener('dragover', (event) => {
+        event.preventDefault(); // Necessário para permitir o drop
+    });
+    
+    novaLinha.addEventListener('drop', (event) => {
+        event.preventDefault();
+        const origem = event.dataTransfer.getData('text');
+        const destino = event.target.closest('tr').rowIndex;
+        
+        if (origem !== destino) {
+            const rows = Array.from(tbody.rows);
+            const origemRow = rows[origem - 1];
+            const destinoRow = rows[destino - 1];
+            
+            if (origem < destino) {
+                tbody.insertBefore(origemRow, destinoRow.nextSibling);
+            } else {
+                tbody.insertBefore(origemRow, destinoRow);
+            }
+            
+            atualizarPeriodos();
+            atualizarGrafico();
+        }
+    });
+
     tbody.appendChild(novaLinha);
     atualizarGrafico();
 }
