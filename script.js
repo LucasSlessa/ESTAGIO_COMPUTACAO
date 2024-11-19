@@ -127,6 +127,32 @@ function limparDados() {
     }
 }
 
+function calcularTendenciaLinear(valores) {
+    const n = valores.length;
+    const x = Array.from({ length: n }, (_, i) => i + 1); // Cria um array de índices (1, 2, 3,...)
+    const y = valores;
+
+    // Calcular a média de x e y
+    const meanX = x.reduce((acc, val) => acc + val, 0) / n;
+    const meanY = y.reduce((acc, val) => acc + val, 0) / n;
+
+    // Calcular o coeficiente angular (m) e o coeficiente linear (b)
+    let numerator = 0;
+    let denominator = 0;
+    for (let i = 0; i < n; i++) {
+        numerator += (x[i] - meanX) * (y[i] - meanY);
+        denominator += (x[i] - meanX) ** 2;
+    }
+
+    const m = numerator / denominator;  // Inclinação
+    const b = meanY - m * meanX;        // Intercepto
+
+    // Calcular os valores da linha de tendência
+    const tendencia = x.map(xValue => m * xValue + b);
+    
+    return tendencia;
+}
+
 function atualizarGrafico() {
     const ctx = document.getElementById('grafico').getContext('2d');
     const tbody = document.querySelector('#dadosTabela tbody');
@@ -141,6 +167,9 @@ function atualizarGrafico() {
         const ajusteText = row.children[3].textContent;
         return ajusteText === '-' ? null : parseFloat(ajusteText);
     });
+
+    // Calcular a tendência linear
+    const tendenciaLinear = calcularTendenciaLinear(valores);
 
     if (chart) {
         chart.destroy();
@@ -168,12 +197,18 @@ function atualizarGrafico() {
                     data: ajustes,
                     borderColor: '#ffc107',
                     tension: 0.1
+                },
+                {
+                    label: 'Tendência Linear',
+                    data: tendenciaLinear,
+                    borderColor: '#dc3545', // Cor da linha de tendência
+                    borderDash: [5, 5],    // Linha tracejada
+                    tension: 0.1
                 }
             ]
         }
     });
 }
-
 
 async function exportarParaPDF() {
     const { jsPDF } = window.jspdf;
